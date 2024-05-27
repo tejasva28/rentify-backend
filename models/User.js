@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: function() { return !this.googleId; }, // Required if no Google ID is present
+    required: function () { return !this.googleId; }, // Required if no Google ID is present
   },
   firstName: {
     type: String,
@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Pre-save hook to hash password before saving user document if the password is provided
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   try {
     if (this.isModified('password') && this.password) {
       const salt = await bcrypt.genSalt(10);
@@ -44,7 +44,7 @@ userSchema.pre('save', async function(next) {
 });
 
 // Method to check the password on signin, only if password exists
-userSchema.methods.isCorrectPassword = async function(password) {
+userSchema.methods.isCorrectPassword = async function (password) {
   if (!this.password) return false;  // Return false if there is no password (Google user)
   return bcrypt.compare(password, this.password);
 };

@@ -28,7 +28,7 @@ app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 8000;
 
-const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/rentify';
+const mongoURI = process.env.MONGO_URI;
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true

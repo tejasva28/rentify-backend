@@ -1,19 +1,27 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 exports.signup = async (req, res) => {
   try {
     const { firstName, lastName, dateOfBirth, email, password } = req.body;
 
-    // Create a new user with the extended model
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 12);
+    console.log('Hashed Password:', hashedPassword);
+
+    // Create a new user with the hashed password
     const newUser = new User({
       firstName,
       lastName,
       dateOfBirth,
       email,
-      password: await bcrypt.hash(password, 12) // Hash the password before saving
+      password: hashedPassword
     });
+
     await newUser.save();
 
     // Generating token after user is saved
@@ -36,10 +44,14 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
+      console.log('User not found');
       return res.status(401).json({ message: 'Invalid Credentials' });
     }
 
+    console.log('User found:', user);
+
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match:', isMatch);
 
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid Credentials' });

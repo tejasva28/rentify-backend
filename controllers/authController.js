@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -9,20 +8,17 @@ exports.signup = async (req, res) => {
   try {
     const { firstName, lastName, dateOfBirth, email, password } = req.body;
 
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 12);
-    console.log('Hashed Password:', hashedPassword);
-
-    // Create a new user with the hashed password
+    // Create a new user without hashing the password
     const newUser = new User({
       firstName,
       lastName,
       dateOfBirth,
       email,
-      password: hashedPassword
+      password // Store plain text password (NOT RECOMMENDED for production)
     });
 
     await newUser.save();
+    console.log('New user created:', newUser);
 
     // Generating token after user is saved
     const token = jwt.sign({ userId: newUser._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
@@ -41,23 +37,27 @@ exports.signup = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt with email:', email);
+
     const user = await User.findOne({ email });
 
     if (!user) {
-      console.log('User not found');
+      console.log('User not found for email:', email);
       return res.status(401).json({ message: 'Invalid Credentials' });
     }
 
     console.log('User found:', user);
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match:', isMatch);
+    // Compare plain text passwords (NOT RECOMMENDED for production)
+    const isMatch = user.password === password;
+    console.log('Password match status for user:', email, isMatch);
 
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid Credentials' });
     }
 
     const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '24h' });
+    console.log('Token generated for user:', email);
 
     res.json({
       token,

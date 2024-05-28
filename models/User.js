@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -30,23 +29,10 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Pre-save hook to hash password before saving user document if the password is provided
-userSchema.pre('save', async function (next) {
-  try {
-    if (this.isModified('password') && this.password) {
-      const salt = await bcrypt.genSalt(10);
-      this.password = await bcrypt.hash(this.password, salt);
-    }
-  } catch (error) {
-    return next(error);
-  }
-  next();
-});
-
 // Method to check the password on signin, only if password exists
 userSchema.methods.isCorrectPassword = async function (password) {
   if (!this.password) return false;  // Return false if there is no password (Google user)
-  return bcrypt.compare(password, this.password);
+  return this.password === password;
 };
 
 module.exports = mongoose.model('User', userSchema);

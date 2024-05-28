@@ -49,7 +49,7 @@ exports.login = async (req, res) => {
     console.log('User found:', user);
 
     // Compare plain text passwords (NOT RECOMMENDED for production)
-    const isMatch = user.password === password;
+    const isMatch = await user.isCorrectPassword(password);
     console.log('Password match status for user:', email, isMatch);
 
     if (!isMatch) {
